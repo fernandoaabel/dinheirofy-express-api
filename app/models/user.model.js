@@ -4,10 +4,9 @@ const UserSchema = mongoose.Schema(
 	{
 		name: String,
 		email: String,
+		username: String,
 		password: String,
-		image_url: String,
-		created_at: String,
-		updated_at: String
+		image_url: String
 	},
 	{
 		timestamps: true

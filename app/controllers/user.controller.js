@@ -5,15 +5,20 @@ const config = require('../../config/config');
 
 // Create and Save a new user
 exports.create = (req, res) => {
+	let user = req.body;
+
+	console.log('User being created', user);
+
 	// Validate request
-	if (!(req.body.email && req.body.password && req.body.name)) {
+	if (!(user.email && user.password && user.username)) {
 		return res.status(400).send({
 			message: 'User info can not be empty.'
 		});
 	}
 
 	// Check if email is already being used
-	User.find({ email: req.body.email }).then((user) => {
+	User.findOne({ email: user.email }).then((user) => {
+		console.log('user found', user);
 		if (user) {
 			return res.status(404).send({ message: 'Email already exists' });
 		}
@@ -21,9 +26,10 @@ exports.create = (req, res) => {
 
 	// Create a User
 	const newUser = new User({
-		name: req.body.name,
-		email: req.body.email,
-		password: req.body.password
+		name: user.name,
+		username: user.username,
+		email: user.email,
+		password: user.password
 	});
 
 	// Save User in the database
@@ -101,25 +107,36 @@ exports.findOne = (req, res) => {
 
 // Find a single user with a userId
 exports.exists = (req, res) => {
-	User.findById(req.params.userId)
-		.then((user) => {
-			if (!user) return false;
-			return true;
-		})
-		.catch((err) => {
-			if (err.kind === 'ObjectId') {
-				return res.status(404).send({ message: 'User not found with id ' + req.params.userId });
-			}
-			return res.status(500).send({ message: 'Error retrieving user with id ' + req.params.userId });
-		});
+	if (req.params.email) {
+		User.findOne({ email: req.params.email })
+			.then((user) => {
+				if (!user) return res.send(false);
+				return res.send(true);
+			})
+			.catch(() => {
+				return res.status(404).send({ message: 'User not found with email: ' + req.params.email });
+			});
+	} else if (req.params.username) {
+		User.findOne({ username: req.params.username })
+			.then((user) => {
+				if (!user) return res.send(false);
+				return res.send(true);
+			})
+			.catch(() => {
+				return res.status(404).send({ message: 'User not found with username: ' + req.params.username });
+			});
+	}
 };
 
 // Update a user identified by the userId in the request
 exports.update = (req, res) => {
+	let user = req.body.user;
+	if (!user) return res.status(404).send({ message: 'User not sent' });
+
 	// Validate Request
-	if (!req.body.email) {
+	if (!user.email || !user.username) {
 		return res.status(400).send({
-			message: 'User email can not be empty'
+			message: 'Email and Username should be filled.'
 		});
 	}
 
@@ -127,10 +144,11 @@ exports.update = (req, res) => {
 	User.findByIdAndUpdate(
 		req.params.userId,
 		{
-			name: req.body.name,
-			email: req.body.email,
-			password: req.body.password,
-			image_url: req.body.image_url
+			name: user.name,
+			username: user.username,
+			email: user.email,
+			//password: user.password,
+			image_url: user.image_url
 		},
 		{ new: true }
 	)
@@ -138,12 +156,11 @@ exports.update = (req, res) => {
 			if (!user) {
 				return res.status(404).send({ message: 'User not found with id ' + req.params.userId });
 			}
-			res.send(note);
+			res.send(user);
 		})
 		.catch((err) => {
-			if (err.kind === 'ObjectId') {
+			if (err.kind === 'ObjectId')
 				return res.status(404).send({ message: 'User not found with id ' + req.params.userId });
-			}
 			return res.status(500).send({ message: 'Error updating user with id ' + req.params.userId });
 		});
 };

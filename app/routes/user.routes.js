@@ -12,10 +12,14 @@ module.exports = (app) => {
 	app.get('/users', middleware.checkToken, users.findAll);
 
 	// Retrieve a single User with userId
-	app.get('/users/:userId', middleware.checkToken, users.findOne);
+	//app.get('/users/exists', users.exists);
 
 	// Retrieve a single User with userId
-	app.get('/users/exists/:userId', users.exists);
+	app.get('/users/exists/email/:email', users.exists);
+	app.get('/users/exists/username/:username', users.exists);
+
+	// Retrieve a single User with userId
+	app.get('/users/:userId', middleware.checkToken, users.findOne);
 
 	// Update a User with userId
 	app.put('/users/:userId', middleware.checkToken, users.update);
