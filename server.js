@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const swaggerDoc = require('./swagger-doc');
 
 // create express app
 const app = express();
@@ -15,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Configuring the database
-const dbConfig = require('../dinheirofy-express-api/config/database.config.js');
+const dbConfig = require('./config/database.config.js');
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
@@ -41,8 +42,9 @@ app.get('/', (req, res) => {
 });
 
 // Require Users routes
-require('../dinheirofy-express-api/app/routes/user.routes.js')(app);
-require('../dinheirofy-express-api/app/routes/wallet.routes.js')(app);
+require('./app/routes/user.routes.js')(app);
+require('./app/routes/wallet.routes.js')(app);
+swaggerDoc(app);
 
 // listen for requests
 app.listen(3000, () => {
